@@ -1,8 +1,12 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Figtree } from "next/font/google";
+import { ThemeProvider } from "@/core/components/providers/theme-provider";
 import { TooltipProvider } from "@/core/components/ui/tooltip";
+import { QueryProvider } from "@/services/orpc/provider";
+import "@/services/orpc/server";
 import { cn } from "@/core/lib/utils";
-import "./globals.css";
+import "@/core/styles/globals.css";
+import { ModeToggle } from "@/core/components/mode-toggle";
 
 const figtree = Figtree({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -29,6 +33,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={cn(
         "h-full",
         "antialiased",
@@ -39,7 +44,19 @@ export default function RootLayout({
       )}
     >
       <body className="min-h-full flex flex-col">
-        <TooltipProvider>{children}</TooltipProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <QueryProvider>
+            <TooltipProvider>
+              {children}
+              <ModeToggle />
+            </TooltipProvider>
+          </QueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
