@@ -1,9 +1,8 @@
-import { authorized, pub } from "@/services/orpc/procedures"
+import { systemRouter } from "@/features/system/api/system.router"
 import { todosRouter } from "@/features/todo/api/todos.router"
 
 export const router = {
-	health: pub.handler(() => ({ ok: true as const })),
-	me: authorized.handler(({ context }) => context.user),
+	system: systemRouter,
 
 	todos: todosRouter,
 }

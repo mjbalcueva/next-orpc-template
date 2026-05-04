@@ -1,8 +1,22 @@
-import { boolean, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core"
+import { relations } from "drizzle-orm"
 
-export const todos = pgTable("todos", {
-	id: uuid().primaryKey().defaultRandom(),
-	text: text().notNull(),
-	done: boolean().notNull().default(false),
-	createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
-})
+import { createTable } from "@/services/drizzle/lib/table-builder"
+import { user } from "@/services/drizzle/schema/auth"
+
+export const todos = createTable("todos", t => ({
+	id: t.uuid("id").primaryKey().defaultRandom(),
+	userId: t
+		.text("user_id")
+		.notNull()
+		.references(() => user.id, { onDelete: "cascade" }),
+	text: t.text("text").notNull(),
+	done: t.boolean("done").notNull().default(false),
+	createdAt: t.timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}))
+
+export const todoRelations = relations(todos, ({ one }) => ({
+	user: one(user, {
+		fields: [todos.userId],
+		references: [user.id],
+	}),
+}))

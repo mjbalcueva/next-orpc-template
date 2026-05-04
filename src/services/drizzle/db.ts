@@ -3,7 +3,7 @@ import postgres from "postgres"
 
 import * as authSchema from "@/services/drizzle/schema/auth"
 import * as todosSchema from "@/services/drizzle/schema/todos"
-import { env } from "@/services/t3-env"
+import { env } from "@/env"
 
 const schema = { ...authSchema, ...todosSchema }
 

@@ -1,76 +1,84 @@
 import { relations } from "drizzle-orm"
-import { boolean, index, pgTable, text, timestamp } from "drizzle-orm/pg-core"
+import { index } from "drizzle-orm/pg-core"
 
-export const user = pgTable("user", {
-	id: text("id").primaryKey(),
-	name: text("name").notNull(),
-	email: text("email").notNull().unique(),
-	emailVerified: boolean("email_verified").default(false).notNull(),
-	image: text("image"),
-	createdAt: timestamp("created_at").defaultNow().notNull(),
-	updatedAt: timestamp("updated_at")
+import { createTable, prefixedName } from "@/services/drizzle/lib/table-builder"
+
+export const user = createTable("user", t => ({
+	id: t.text("id").primaryKey(),
+	name: t.text("name").notNull(),
+	email: t.text("email").notNull().unique(),
+	emailVerified: t.boolean("email_verified").default(false).notNull(),
+	image: t.text("image"),
+	createdAt: t.timestamp("created_at").defaultNow().notNull(),
+	updatedAt: t
+		.timestamp("updated_at")
 		.defaultNow()
 		.$onUpdate(() => /* @__PURE__ */ new Date())
 		.notNull(),
-})
+}))
 
-export const session = pgTable(
+export const session = createTable(
 	"session",
-	{
-		id: text("id").primaryKey(),
-		expiresAt: timestamp("expires_at").notNull(),
-		token: text("token").notNull().unique(),
-		createdAt: timestamp("created_at").defaultNow().notNull(),
-		updatedAt: timestamp("updated_at")
+	t => ({
+		id: t.text("id").primaryKey(),
+		expiresAt: t.timestamp("expires_at").notNull(),
+		token: t.text("token").notNull().unique(),
+		createdAt: t.timestamp("created_at").defaultNow().notNull(),
+		updatedAt: t
+			.timestamp("updated_at")
 			.$onUpdate(() => /* @__PURE__ */ new Date())
 			.notNull(),
-		ipAddress: text("ip_address"),
-		userAgent: text("user_agent"),
-		userId: text("user_id")
+		ipAddress: t.text("ip_address"),
+		userAgent: t.text("user_agent"),
+		userId: t
+			.text("user_id")
 			.notNull()
 			.references(() => user.id, { onDelete: "cascade" }),
-	},
-	table => [index("session_userId_idx").on(table.userId)]
+	}),
+	table => [index(prefixedName("session_userId_idx")).on(table.userId)]
 )
 
-export const account = pgTable(
+export const account = createTable(
 	"account",
-	{
-		id: text("id").primaryKey(),
-		accountId: text("account_id").notNull(),
-		providerId: text("provider_id").notNull(),
-		userId: text("user_id")
+	t => ({
+		id: t.text("id").primaryKey(),
+		accountId: t.text("account_id").notNull(),
+		providerId: t.text("provider_id").notNull(),
+		userId: t
+			.text("user_id")
 			.notNull()
 			.references(() => user.id, { onDelete: "cascade" }),
-		accessToken: text("access_token"),
-		refreshToken: text("refresh_token"),
-		idToken: text("id_token"),
-		accessTokenExpiresAt: timestamp("access_token_expires_at"),
-		refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
-		scope: text("scope"),
-		password: text("password"),
-		createdAt: timestamp("created_at").defaultNow().notNull(),
-		updatedAt: timestamp("updated_at")
+		accessToken: t.text("access_token"),
+		refreshToken: t.text("refresh_token"),
+		idToken: t.text("id_token"),
+		accessTokenExpiresAt: t.timestamp("access_token_expires_at"),
+		refreshTokenExpiresAt: t.timestamp("refresh_token_expires_at"),
+		scope: t.text("scope"),
+		password: t.text("password"),
+		createdAt: t.timestamp("created_at").defaultNow().notNull(),
+		updatedAt: t
+			.timestamp("updated_at")
 			.$onUpdate(() => /* @__PURE__ */ new Date())
 			.notNull(),
-	},
-	table => [index("account_userId_idx").on(table.userId)]
+	}),
+	table => [index(prefixedName("account_userId_idx")).on(table.userId)]
 )
 
-export const verification = pgTable(
+export const verification = createTable(
 	"verification",
-	{
-		id: text("id").primaryKey(),
-		identifier: text("identifier").notNull(),
-		value: text("value").notNull(),
-		expiresAt: timestamp("expires_at").notNull(),
-		createdAt: timestamp("created_at").defaultNow().notNull(),
-		updatedAt: timestamp("updated_at")
+	t => ({
+		id: t.text("id").primaryKey(),
+		identifier: t.text("identifier").notNull(),
+		value: t.text("value").notNull(),
+		expiresAt: t.timestamp("expires_at").notNull(),
+		createdAt: t.timestamp("created_at").defaultNow().notNull(),
+		updatedAt: t
+			.timestamp("updated_at")
 			.defaultNow()
 			.$onUpdate(() => /* @__PURE__ */ new Date())
 			.notNull(),
-	},
-	table => [index("verification_identifier_idx").on(table.identifier)]
+	}),
+	table => [index(prefixedName("verification_identifier_idx")).on(table.identifier)]
 )
 
 export const userRelations = relations(user, ({ many }) => ({

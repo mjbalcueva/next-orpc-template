@@ -2,8 +2,8 @@ import { betterAuth } from "better-auth"
 import { drizzleAdapter } from "better-auth/adapters/drizzle"
 import { nextCookies } from "better-auth/next-js"
 
-import { db } from "@/services/drizzle"
-import { env } from "@/services/t3-env"
+import { db } from "@/services/drizzle/db"
+import { env } from "@/env"
 
 export const auth = betterAuth({
 	database: drizzleAdapter(db, {

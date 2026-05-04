@@ -1,24 +1,48 @@
-import { desc, eq } from "drizzle-orm"
+import { ORPCError } from "@orpc/server"
+import { and, desc, eq } from "drizzle-orm"
 
-import { db } from "@/services/drizzle"
+import { db } from "@/services/drizzle/db"
 import { todos } from "@/services/drizzle/schema/todos"
-import { pub } from "@/services/orpc/procedures"
+import { protectedProcedure } from "@/services/orpc/procedures"
 
-import { createTodoSchema, removeTodoSchema, toggleTodoSchema } from "./todos.schema"
+import { createTodoSchema, removeTodoSchema, todoIdSchema, toggleTodoSchema } from "./todos.schema"
 
 export const todosRouter = {
-	list: pub.handler(() => db.select().from(todos).orderBy(desc(todos.createdAt))),
+	list: protectedProcedure.handler(({ context }) =>
+		db.select().from(todos).where(eq(todos.userId, context.user.id)).orderBy(desc(todos.createdAt))
+	),
 
-	create: pub.input(createTodoSchema).handler(async ({ input }) => {
-		const [row] = await db.insert(todos).values(input).returning()
+	getById: protectedProcedure.input(todoIdSchema).handler(async ({ input, context }) => {
+		const [row] = await db
+			.select()
+			.from(todos)
+			.where(and(eq(todos.id, input.id), eq(todos.userId, context.user.id)))
+			.limit(1)
+		return row ?? null
+	}),
+
+	create: protectedProcedure.input(createTodoSchema).handler(async ({ input, context }) => {
+		const [row] = await db
+			.insert(todos)
+			.values({ ...input, userId: context.user.id })
+			.returning()
 		return row
 	}),
 
-	toggle: pub.input(toggleTodoSchema).handler(async ({ input }) => {
-		await db.update(todos).set({ done: input.done }).where(eq(todos.id, input.id))
+	toggle: protectedProcedure.input(toggleTodoSchema).handler(async ({ input, context }) => {
+		const [row] = await db
+			.update(todos)
+			.set({ done: input.done })
+			.where(and(eq(todos.id, input.id), eq(todos.userId, context.user.id)))
+			.returning({ id: todos.id })
+		if (!row) throw new ORPCError("NOT_FOUND")
 	}),
 
-	remove: pub.input(removeTodoSchema).handler(async ({ input }) => {
-		await db.delete(todos).where(eq(todos.id, input.id))
+	remove: protectedProcedure.input(removeTodoSchema).handler(async ({ input, context }) => {
+		const [row] = await db
+			.delete(todos)
+			.where(and(eq(todos.id, input.id), eq(todos.userId, context.user.id)))
+			.returning({ id: todos.id })
+		if (!row) throw new ORPCError("NOT_FOUND")
 	}),
 }

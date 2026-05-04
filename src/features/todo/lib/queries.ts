@@ -10,6 +10,10 @@ export function useTodos() {
 	return useQuery(orpc.todos.list.queryOptions())
 }
 
+export function useTodo(id: string) {
+	return useQuery(orpc.todos.getById.queryOptions({ input: { id } }))
+}
+
 export function useInvalidateTodos() {
 	const queryClient = useQueryClient()
 	return () => queryClient.invalidateQueries({ queryKey: orpc.todos.key() })
@@ -32,9 +36,16 @@ export function useToggleTodo() {
 	return useMutation(orpc.todos.toggle.mutationOptions({ onSuccess: invalidate }))
 }
 
-export function useRemoveTodo() {
+export function useRemoveTodo(opts?: { onSuccess?: () => void }) {
 	const invalidate = useInvalidateTodos()
-	return useMutation(orpc.todos.remove.mutationOptions({ onSuccess: invalidate }))
+	return useMutation(
+		orpc.todos.remove.mutationOptions({
+			onSuccess: () => {
+				void invalidate()
+				opts?.onSuccess?.()
+			},
+		})
+	)
 }
 
 // Re-export input types for convenience

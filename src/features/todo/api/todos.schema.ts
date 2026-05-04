@@ -13,6 +13,11 @@ export const removeTodoSchema = z.object({
 	id: z.uuid(),
 })
 
+export const todoIdSchema = z.object({
+	id: z.uuid(),
+})
+
 export type CreateTodoInput = z.infer<typeof createTodoSchema>
 export type ToggleTodoInput = z.infer<typeof toggleTodoSchema>
 export type RemoveTodoInput = z.infer<typeof removeTodoSchema>
+export type TodoIdInput = z.infer<typeof todoIdSchema>

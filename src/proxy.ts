@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { getSessionCookie } from "better-auth/cookies"
 
+import { isProtectedProxyPath } from "@/core/config/proxy-routes"
+
 /**
  * Next.js Proxy (formerly middleware). Performs a fast cookie-only
  * session check — does NOT validate the session against the DB. Use
@@ -8,6 +10,10 @@ import { getSessionCookie } from "better-auth/cookies"
  * procedures for a real auth check.
  */
 export function proxy(request: NextRequest) {
+	if (!isProtectedProxyPath(request.nextUrl.pathname)) {
+		return NextResponse.next()
+	}
+
 	const sessionCookie = getSessionCookie(request)
 
 	if (!sessionCookie) {
@@ -20,5 +26,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-	matcher: ["/dashboard/:path*"],
+	matcher: ["/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt).*)"],
 }
