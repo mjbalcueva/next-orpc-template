@@ -1,9 +1,9 @@
 ---
-name: payreto
+name: next_template
 description: A brief description of what this skill does
 ---
 
-# payreto
+# next_template
 
 Instructions for the agent to follow when this skill is activated.
 
